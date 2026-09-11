@@ -1,5 +1,8 @@
 # Running Nari Qwen3-TTS on macOS (Apple Silicon)
 
+> [!NOTE]
+> This documentation is part of the macOS adaptation of [Nari Qwen3-TTS](https://github.com/nari-labs/nari-qwen3-tts), originally created and developed by [Nari Labs](https://nari-labs.com).
+
 This guide provides complete instructions for setting up, running tests, serving the API, and synthesizing speech using the Nari Qwen3-TTS repository locally on macOS.
 
 ---

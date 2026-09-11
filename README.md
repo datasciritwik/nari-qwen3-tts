@@ -1,8 +1,25 @@
-# Nari Qwen3-TTS
+# Nari Qwen3-TTS (macOS Fork & Voice Studio)
+
+> [!IMPORTANT]
+> **Attribution & Upstream Notice**
+>
+> This repository is an adaptation and fork of the original **[Nari Qwen3-TTS](https://github.com/nari-labs/nari-qwen3-tts)** created and maintained by **[Nari Labs](https://nari-labs.com)**.
+> All core architecture, H100 serving engine designs, protocols, and performance benchmarks are the original work of Nari Labs.
+>
+> - **Original Repository**: [https://github.com/nari-labs/nari-qwen3-tts](https://github.com/nari-labs/nari-qwen3-tts)
+> - **Original Authors**: [Nari Labs](https://nari-labs.com)
+>
+> ### What this fork adds:
+> - 🍏 **Apple Silicon (macOS) Compatibility**: Enables local execution on macOS using Apple Silicon Metal Performance Shaders (`mps`) or CPU, non-CUDA stubs for Triton, and relaxed version constraints.
+> - 🎙️ **Voice Studio Web UI**: A modern, dark glassmorphic HTML/CSS/JS frontend (`web/`) with 9 speaker cards, waveform visualization, Markdown cleaner, and custom audio player.
+> - 🚀 **macOS Local Dev Server**: `scripts/run_mac_dev_server.py` integrating the FastAPI HTTP/WebSocket speech engine with the web frontend and long-text chunking.
+> - 📖 **macOS Setup & Scripts**: Automated setup script (`scripts/setup_mac.sh`) and detailed documentation in [`docs/mac_setup.md`](docs/mac_setup.md).
+
+---
 
 ## TL;DR
 
-Nari Qwen3-TTS is a high-performance, single-H100 serving implementation of
+Nari Qwen3-TTS is a high-performance serving implementation of
 [Qwen3-TTS 1.7B CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice).
 It exposes streaming and non-streaming speech generation over HTTP, plus
 WebSocket-based input streaming for incremental text input.
