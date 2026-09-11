@@ -3,8 +3,32 @@
 from __future__ import annotations
 
 import torch
-import triton
-import triton.language as tl
+try:
+    import triton
+    import triton.language as tl
+except ImportError:
+    class _TritonStub:
+        @staticmethod
+        def autotune(*args, **kwargs):
+            return lambda fn: fn
+
+        @staticmethod
+        def jit(fn):
+            return fn
+
+        @staticmethod
+        def Config(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def next_power_of_2(n: int) -> int:
+            return 1 if n <= 1 else 1 << (n - 1).bit_length()
+
+    class _TlStub:
+        constexpr = object
+
+    triton = _TritonStub()
+    tl = _TlStub()
 
 from nari_qwen3_tts.contract.rng import MAX_FUSED_RESIDUAL_TOP_K
 

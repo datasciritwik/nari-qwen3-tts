@@ -76,6 +76,25 @@ The distribution name uses hyphens, while Python imports use underscores:
 from nari_qwen3_tts import ModelAssetConfig, open_model
 ```
 
+## Run on macOS (Apple Silicon)
+
+For a complete guide on running and developing on Mac, see [macOS Setup Guide](docs/mac_setup.md).
+
+Quick setup:
+```bash
+# 1. Install audio dependencies
+brew install libsndfile sox
+
+# 2. Sync Python environment (excluding CUDA-only packages)
+uv sync --extra codec --extra serving --extra test
+
+# 3. Run test suite
+uv run pytest
+
+# 4. Start local API & WebSocket dev server
+uv run python scripts/run_mac_dev_server.py --port 8000
+```
+
 ## Profiles
 
 - `ttfa`: prioritizes time to first audio with latency-oriented scheduling and
