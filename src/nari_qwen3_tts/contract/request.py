@@ -76,6 +76,7 @@ class SynthesisRequest:
     subtalker_temperature: float = 0.9
     subtalker_top_k: int = 50
     subtalker_top_p: float = 1.0
+    speed: float = 1.0
     skip_fixed_bootstrap_audio: bool = True
     stream_chunk_schedule: tuple[int, ...] | None = None
     stream_chunk_frames: int | None = None
@@ -125,6 +126,10 @@ class SynthesisRequest:
             raise ValueError("subtalker_top_p must be in (0, 1]")
         if self.repetition_penalty <= 0:
             raise ValueError("repetition_penalty must be positive")
+        if isinstance(self.speed, bool) or not isinstance(self.speed, (int, float)):
+            raise TypeError("speed must be a number")
+        if not math.isfinite(float(self.speed)) or self.speed <= 0:
+            raise ValueError("speed must be positive and finite")
         if not self.do_sample and self.temperature != 0:
             object.__setattr__(self, "temperature", 0.0)
         if self.stream_chunk_schedule is not None:

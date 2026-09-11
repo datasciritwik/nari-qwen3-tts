@@ -308,6 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const useCleaner = markdownToggle ? markdownToggle.checked : true;
     const finalText = useCleaner ? cleanMarkdown(rawText) : rawText;
 
+    const pace = paceSlider ? parseFloat(paceSlider.value) : 1.05;
+    const temp = tempSlider ? parseFloat(tempSlider.value) : 0.68;
+
     isGenerating = true;
     if (synthesizeBtn) synthesizeBtn.disabled = true;
     if (topGenerateBtn) topGenerateBtn.disabled = true;
@@ -315,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnIcon) btnIcon.classList.add('hidden');
     if (btnLabel) btnLabel.textContent = 'Synthesizing...';
     if (deckMetaInfo) {
-      deckMetaInfo.textContent = `• Generating audio with ${VOICE_META[selectedVoice]?.name || selectedVoice}...`;
+      deckMetaInfo.textContent = `• Generating audio with ${VOICE_META[selectedVoice]?.name || selectedVoice} (Pace: ${pace.toFixed(2)}x, Temp: ${temp.toFixed(2)})...`;
     }
 
     const startTime = performance.now();
@@ -331,7 +334,10 @@ document.addEventListener('DOMContentLoaded', () => {
           voice: selectedVoice,
           language: languageSelect ? languageSelect.value : 'english',
           response_format: 'wav',
-          stream: false
+          stream: false,
+          speed: pace,
+          temperature: temp,
+          subtalker_temperature: temp
         })
       });
 
@@ -347,6 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
         text: rawText,
         voice: selectedVoice,
         lang: languageSelect ? languageSelect.value : 'english',
+        pace: pace.toFixed(2),
+        temp: temp.toFixed(2),
         sizeKb: (blob.size / 1024).toFixed(1),
         genTime: elapsedSec
       });
@@ -355,6 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
         url: audioUrl,
         text: rawText,
         voice: selectedVoice,
+        pace: pace.toFixed(2),
+        temp: temp.toFixed(2),
         sizeKb: (blob.size / 1024).toFixed(1),
         timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
@@ -389,8 +399,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const voiceName = VOICE_META[meta.voice]?.name || meta.voice;
+    const paceStr = meta.pace ? ` • ${meta.pace}x pace` : '';
+    const tempStr = meta.temp ? ` • temp ${meta.temp}` : '';
     if (deckMetaInfo) {
-      deckMetaInfo.textContent = `• ${voiceName} (${meta.sizeKb} KB in ${meta.genTime}s)`;
+      deckMetaInfo.textContent = `• ${voiceName}${paceStr}${tempStr} (${meta.sizeKb} KB in ${meta.genTime}s)`;
     }
     if (visualizerIdleNotice) {
       visualizerIdleNotice.classList.add('hidden');
@@ -641,6 +653,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="flex items-center space-x-2 font-label-mono-sm text-label-mono-sm text-outline mt-0.5">
               <span>${item.sizeKb ? item.sizeKb + ' KB' : 'WAV'}</span>
+              ${item.pace ? `<span>•</span><span class="text-secondary">${item.pace}x</span>` : ''}
+              ${item.temp ? `<span>•</span><span class="text-primary">T:${item.temp}</span>` : ''}
               <span>•</span>
               <span>${item.timeStr}</span>
             </div>

@@ -93,6 +93,10 @@ class RealMacEngineBackend(FakeEngineBackend):
         del admitted_at_s, live
         speaker = self.supported_speakers.get((req.voice or "").lower(), "ryan")
         language = req.language or "English"
+        temperature = float(getattr(req, "temperature", 0.9))
+        do_sample = bool(getattr(req, "do_sample", True))
+        speed = float(getattr(req, "speed", 1.0))
+        instruct = getattr(req, "instruct", "") or None
 
         # Normalize markdown formatting so # is not spoken as hashtag
         normalized_text = _normalize_markdown(req.text)
@@ -101,7 +105,7 @@ class RealMacEngineBackend(FakeEngineBackend):
         if not paragraphs:
             paragraphs = [normalized_text]
 
-        print(f"Synthesizing [{request_id}] ({len(paragraphs)} paragraph(s), voice: {speaker}, lang: {language})")
+        print(f"Synthesizing [{request_id}] ({len(paragraphs)} paragraph(s), voice: {speaker}, lang: {language}, pace: {speed:.2f}x, temp: {temperature})")
 
         all_audio = []
         sample_rate = 24000
@@ -109,13 +113,35 @@ class RealMacEngineBackend(FakeEngineBackend):
 
         for p in paragraphs:
             try:
-                wavs, sr = self.qwen_model.generate_custom_voice(
-                    text=p,
-                    speaker=speaker,
-                    language=language,
-                )
+                generate_kwargs = {
+                    "text": p,
+                    "speaker": speaker,
+                    "language": language,
+                    "temperature": temperature,
+                    "do_sample": do_sample,
+                }
+                if hasattr(req, "subtalker_temperature") and req.subtalker_temperature is not None:
+                    generate_kwargs["subtalker_temperature"] = float(req.subtalker_temperature)
+                if instruct:
+                    generate_kwargs["instruct"] = instruct
+
+                wavs, sr = self.qwen_model.generate_custom_voice(**generate_kwargs)
                 sample_rate = sr
-                all_audio.append(wavs[0])
+                audio_piece = wavs[0]
+
+                # Apply pace / speed time-scaling if requested
+                if speed > 0 and abs(speed - 1.0) > 0.01:
+                    try:
+                        import torch
+                        import torchaudio
+
+                        tensor_wav = torch.from_numpy(np.ascontiguousarray(audio_piece, dtype=np.float32)).unsqueeze(0)
+                        scaled_wav, _ = torchaudio.functional.speed(tensor_wav, sr, speed)
+                        audio_piece = scaled_wav.squeeze(0).cpu().numpy()
+                    except Exception as speed_err:
+                        print(f"Pace adjustment failed: {speed_err}", file=sys.stderr)
+
+                all_audio.append(audio_piece)
                 if len(paragraphs) > 1:
                     all_audio.append(pause)
             except Exception as err:

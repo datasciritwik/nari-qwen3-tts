@@ -57,8 +57,8 @@ class SpeechRequestBody(_SynthesisControls):
     def to_domain(self, *, served_model_id: str = DEFAULT_MODEL_ID) -> SynthesisRequest:
         if self.model is not None and self.model != served_model_id:
             raise ValueError(f"unsupported model: {self.model!r}")
-        if self.speed != 1.0:
-            raise ValueError("Qwen3-TTS speed is fixed at 1.0")
+        if self.speed < 0.25 or self.speed > 4.0:
+            raise ValueError("speed must be between 0.25 and 4.0")
         if (
             self.instruct is not None
             and self.instructions is not None
@@ -72,6 +72,7 @@ class SpeechRequestBody(_SynthesisControls):
             text=self.input,
             instruct=self.instruct if self.instruct is not None else (self.instructions or ""),
             non_streaming_mode=self.non_streaming_mode,
+            speed=self.speed,
             **controls,
         )
 

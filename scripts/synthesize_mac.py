@@ -49,6 +49,20 @@ def parse_args() -> argparse.Namespace:
         help="Optional style or emotion instruction",
     )
     parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.68,
+        help="Sampling temperature (e.g. 0.68)",
+    )
+    parser.add_argument(
+        "--pace",
+        "--speed",
+        dest="speed",
+        type=float,
+        default=1.0,
+        help="Speech cadence / speed scaling (e.g. 1.05)",
+    )
+    parser.add_argument(
         "--device",
         choices=["mps", "cpu", "auto"],
         default="auto",
@@ -94,15 +108,26 @@ def main() -> None:
         "text": args.text,
         "language": args.language,
         "speaker": args.speaker,
+        "temperature": args.temperature,
     }
     if args.instruct:
         kwargs["instruct"] = args.instruct
 
     wavs, sr = model.generate_custom_voice(**kwargs)
+    audio = wavs[0]
+
+    if args.speed > 0 and abs(args.speed - 1.0) > 0.01:
+        try:
+            import torchaudio
+            tensor_wav = torch.from_numpy(np.ascontiguousarray(audio, dtype=np.float32)).unsqueeze(0)
+            scaled_wav, _ = torchaudio.functional.speed(tensor_wav, sr, args.speed)
+            audio = scaled_wav.squeeze(0).cpu().numpy()
+        except Exception as speed_err:
+            print(f"Pace adjustment failed: {speed_err}", file=sys.stderr)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    sf.write(str(args.output), wavs[0], sr)
-    print(f"Synthesis successful! Audio saved to: {args.output.resolve()} (Sample Rate: {sr} Hz)")
+    sf.write(str(args.output), audio, sr)
+    print(f"Synthesis successful! Audio saved to: {args.output.resolve()} (Sample Rate: {sr} Hz, Pace: {args.speed:.2f}x, Temp: {args.temperature})")
 
 
 if __name__ == "__main__":
