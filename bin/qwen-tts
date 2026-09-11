@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Nari Qwen3-TTS System-Wide CLI Launcher for macOS Apple Silicon
+REPO_DIR="/Users/ritwiksingh/Desktop/extra/nari-qwen3-tts"
+PYTHON_BIN="$REPO_DIR/.venv/bin/python"
+CLI_SCRIPT="$REPO_DIR/scripts/qwen_tts_cli.py"
+
+if [ ! -f "$PYTHON_BIN" ]; then
+    echo "Error: Virtual environment not found at $PYTHON_BIN" >&2
+    exit 1
+fi
+
+exec "$PYTHON_BIN" "$CLI_SCRIPT" "$@"
