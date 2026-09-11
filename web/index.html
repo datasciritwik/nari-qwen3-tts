@@ -1,403 +1,733 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nari Qwen3-TTS — Voice Studio</title>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Nari Qwen3-TTS Studio</title>
   <meta name="description" content="Ultra-fast, studio-grade neural speech synthesis powered by Qwen3-TTS on Apple Silicon.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
-  <link rel="stylesheet" href="style.css">
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <!-- Fonts: Geist, Inter, JetBrains Mono -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-container": "#00a572",
+            "primary-container": "#a078ff",
+            "on-tertiary-fixed-variant": "#005236",
+            "inverse-surface": "#dfe2ee",
+            "surface-container": "#1c2028",
+            "surface-dim": "#0f131c",
+            "on-surface-variant": "#cbc3d7",
+            "primary": "#d0bcff",
+            "inverse-primary": "#6d3bd7",
+            "on-tertiary-fixed": "#002113",
+            "on-secondary-fixed": "#001f26",
+            "surface": "#0f131c",
+            "on-secondary-container": "#00424e",
+            "on-primary-fixed-variant": "#5516be",
+            "on-tertiary-container": "#00311f",
+            "on-primary": "#3c0091",
+            "secondary-container": "#03b5d3",
+            "tertiary-fixed": "#6ffbbe",
+            "error-container": "#93000a",
+            "on-error-container": "#ffdad6",
+            "secondary": "#4cd7f6",
+            "on-secondary-fixed-variant": "#004e5c",
+            "outline": "#958ea0",
+            "tertiary": "#4edea3",
+            "on-tertiary": "#003824",
+            "surface-container-lowest": "#0a0e16",
+            "surface-container-low": "#181c24",
+            "surface-variant": "#31353e",
+            "on-primary-fixed": "#23005c",
+            "on-secondary": "#003640",
+            "outline-variant": "#494454",
+            "surface-container-high": "#262a33",
+            "surface-bright": "#353942",
+            "surface-tint": "#d0bcff",
+            "primary-fixed": "#e9ddff",
+            "background": "#0f131c",
+            "on-background": "#dfe2ee",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-primary-container": "#340080",
+            "error": "#ffb4ab",
+            "surface-container-highest": "#31353e",
+            "on-surface": "#dfe2ee",
+            "secondary-fixed": "#acedff",
+            "on-error": "#690005",
+            "primary-fixed-dim": "#d0bcff",
+            "inverse-on-surface": "#2c3039",
+            "secondary-fixed-dim": "#4cd7f6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-xl": "1.75rem",
+            "gutter": "0.75rem",
+            "space-md": "0.75rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1.25rem"
+          },
+          "fontFamily": {
+            "label-mono-md": ["JetBrains Mono"],
+            "title-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg-mobile": ["Geist"],
+            "headline-lg": ["Geist"],
+            "display-lg": ["Geist"],
+            "timecode": ["JetBrains Mono"],
+            "label-mono-sm": ["JetBrains Mono"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-mono-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "title-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "timecode": ["14px", { "lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+            "label-mono-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "400" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Custom Studio Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0e16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262a33;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #494454;
+    }
+    /* Waveform scrub animation cue */
+    .waveform-glow {
+      filter: drop-shadow(0 0 6px rgba(76, 215, 246, 0.45));
+    }
+    .violet-glow {
+      box-shadow: 0 0 16px rgba(160, 120, 255, 0.35);
+    }
+    .neon-pulse {
+      animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+  </style>
 </head>
-<body>
-  <!-- Ambient background lighting effects -->
-  <div class="glow-orb glow-top-left" aria-hidden="true"></div>
-  <div class="glow-orb glow-top-right" aria-hidden="true"></div>
-  <div class="glow-orb glow-bottom" aria-hidden="true"></div>
+<body class="bg-surface text-on-surface font-body-sm text-body-sm antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+  <!-- Hidden native audio element -->
+  <audio id="native-audio" preload="auto"></audio>
 
-  <div class="studio-wrapper">
-    <!-- Studio Header -->
-    <header class="studio-header">
-      <div class="header-left">
-        <div class="brand-badge">
-          <div class="brand-icon">
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
+  <!-- TOP APP BAR -->
+  <header class="flex justify-between items-center w-full px-space-lg h-14 bg-surface-container-low border-b border-outline-variant/30 select-none shadow-sm sticky top-0 z-50">
+    <!-- Left Brand & Telemetry Cluster -->
+    <div class="flex items-center space-x-space-md">
+      <div class="flex items-center space-x-space-xs">
+        <span class="w-7 h-7 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant/40 text-secondary">
+          <span class="material-symbols-outlined text-secondary" data-icon="graphic_eq">graphic_eq</span>
+        </span>
+        <span class="font-headline-lg text-headline-lg font-semibold text-primary dark:text-primary tracking-tight">Nari Qwen3-TTS</span>
+      </div>
+      <div class="h-4 w-px bg-outline-variant/30 hidden md:block"></div>
+      <!-- System Engine Status Pill -->
+      <div id="system-status-pill" class="hidden lg:flex items-center space-x-space-xs px-2.5 py-1 rounded-full bg-surface-container-lowest border border-outline-variant/30 font-label-mono-sm text-label-mono-sm">
+        <span class="w-2 h-2 rounded-full bg-tertiary neon-pulse" id="status-dot"></span>
+        <span class="text-tertiary font-medium" id="status-text">Engine Online</span>
+        <span class="text-outline">•</span>
+        <span class="text-on-surface-variant font-label-mono-sm">localhost:8000</span>
+        <span class="text-secondary">(0.18s RTF)</span>
+      </div>
+      <!-- Hardware & Audio Spec Badge -->
+      <div class="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/20 font-label-mono-sm text-label-mono-sm text-on-surface-variant">
+        <span class="text-secondary">⚡</span>
+        <span class="text-on-surface">MPS Apple Silicon</span>
+        <span class="text-outline">|</span>
+        <span>24kHz 16-bit Float PCM</span>
+      </div>
+    </div>
+    <!-- Center Navigation Links -->
+    <nav class="hidden md:flex items-center space-x-space-lg">
+      <a class="text-secondary border-b-2 border-secondary font-medium pb-1 transition-all duration-150 active:scale-[0.98]" href="#">Studio</a>
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors pb-1" href="#">Voice Models</a>
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors pb-1" href="#">Dataset</a>
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors pb-1" href="#">Batch Queue</a>
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+    </nav>
+    <!-- Trailing Actions Cluster -->
+    <div class="flex items-center space-x-space-sm">
+      <a href="https://github.com/datasciritwik/nari-qwen3-tts" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-150 active:scale-[0.98]" title="GitHub Repository">
+        <span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+      </a>
+      <div class="h-4 w-px bg-outline-variant/30"></div>
+      <!-- Export Action -->
+      <a id="top-download-btn" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-mono-sm text-label-mono-sm border border-outline-variant/40 flex items-center space-x-1.5 transition-all duration-150 active:scale-[0.98] cursor-pointer" download="qwen3_speech.wav">
+        <span class="material-symbols-outlined text-secondary" data-icon="download">download</span>
+        <span>Export WAV</span>
+      </a>
+      <!-- Primary Trailing Action -->
+      <button id="top-generate-btn" class="px-3.5 py-1.5 rounded-lg bg-primary-container hover:bg-opacity-90 text-on-primary font-body-sm text-body-sm font-medium flex items-center space-x-1.5 transition-all duration-150 active:scale-[0.98] shadow-sm shadow-primary/20">
+        <span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        <span>Generate Speech</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="flex-1 w-full max-w-[1780px] mx-auto p-space-md grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+    <!-- LEFT COLUMN (5 Columns): Voice Library Selection Rack -->
+    <section class="xl:col-span-5 flex flex-col space-y-gutter">
+      <!-- Speaker Voice Section Header & Category Filter -->
+      <div class="bg-surface-container-low rounded-xl border border-outline-variant/30 p-space-md flex flex-col space-y-space-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-space-sm">
+            <span class="material-symbols-outlined text-primary" data-icon="record_voice_over">record_voice_over</span>
+            <h2 class="font-title-md text-title-md text-on-surface font-semibold">Neural Speaker Timbre</h2>
+            <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-mono-sm text-label-mono-sm">9 Voices</span>
           </div>
-          <div class="brand-info">
-            <div class="brand-name">
-              <span>Nari Qwen3-TTS</span>
-              <span class="pro-tag">STUDIO</span>
+          <!-- Filter Segmented Tabs -->
+          <div class="flex items-center bg-surface-container-lowest p-0.5 rounded-lg border border-outline-variant/30" id="gender-filter-group">
+            <button class="filter-tab px-2.5 py-1 rounded bg-surface-container-high text-on-surface font-label-mono-sm text-label-mono-sm font-medium transition-colors" data-filter="all">All (9)</button>
+            <button class="filter-tab px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface font-label-mono-sm text-label-mono-sm transition-colors" data-filter="male">Male (5)</button>
+            <button class="filter-tab px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface font-label-mono-sm text-label-mono-sm transition-colors" data-filter="female">Female (4)</button>
+          </div>
+        </div>
+
+        <!-- Voice Card Grid (All 9 Speakers) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-2.5 max-h-[510px] overflow-y-auto pr-1" id="voice-cards-container">
+          <!-- 1. Ryan -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="ryan" data-gender="male">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  RY
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Ryan</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Male</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors" title="Listen sample">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
             </div>
-            <span class="brand-sub">Apple Silicon Neural Audio Engine</span>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Expressive, Rich Tone</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Studio V3</span>
+              <span class="text-tertiary text-[11px] font-label-mono-sm">Ready</span>
+            </div>
+          </div>
+
+          <!-- 2. Serena (Default Active) -->
+          <div class="voice-card active relative bg-surface-container rounded-lg border-2 border-primary-container p-2.5 violet-glow transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="serena" data-gender="female">
+            <div class="active-badge absolute -top-2 -right-1 px-1.5 py-0.2 rounded-full bg-primary-container text-on-primary font-label-mono-sm text-[9px] font-bold tracking-wider uppercase shadow-sm">
+              Active
+            </div>
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center font-label-mono-md text-label-mono-md text-primary font-bold border border-primary/40">
+                  SR
+                </div>
+                <div>
+                  <div class="flex items-center space-x-1">
+                    <h3 class="font-body-sm text-body-sm font-bold text-primary">Serena</h3>
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  </div>
+                  <span class="font-label-mono-sm text-label-mono-sm text-secondary">Female</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-primary text-on-primary flex items-center justify-center shadow-xs" title="Selected">
+                <span class="material-symbols-outlined" style="font-size: 14px;">equalizer</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-on-surface-variant leading-tight">Warm Narrative, Storytelling</p>
+            <div class="h-3 w-full bg-surface-container-lowest rounded flex items-center px-1 space-x-0.5 overflow-hidden">
+              <span class="h-2 w-1 bg-secondary rounded-xs"></span>
+              <span class="h-2.5 w-1 bg-primary rounded-xs"></span>
+              <span class="h-3 w-1 bg-secondary rounded-xs"></span>
+              <span class="h-1.5 w-1 bg-primary-container rounded-xs"></span>
+              <span class="h-2.5 w-1 bg-secondary rounded-xs"></span>
+              <span class="h-2 w-1 bg-outline rounded-xs"></span>
+              <span class="h-1 w-1 bg-outline-variant rounded-xs"></span>
+            </div>
+          </div>
+
+          <!-- 3. Aiden -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="aiden" data-gender="male">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  AD
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Aiden</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Male</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Baritone, Deep &amp; Steady</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Documentary</span>
+              <span class="text-outline text-[11px] font-label-mono-sm">Idle</span>
+            </div>
+          </div>
+
+          <!-- 4. Vivian -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="vivian" data-gender="female">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  VV
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Vivian</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Female</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Bright, Dynamic &amp; Friendly</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Commercial</span>
+              <span class="text-tertiary text-[11px] font-label-mono-sm">Ready</span>
+            </div>
+          </div>
+
+          <!-- 5. Eric -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="eric" data-gender="male">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  EC
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Eric</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Male</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Casual, Conversational</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Podcast</span>
+              <span class="text-tertiary text-[11px] font-label-mono-sm">Ready</span>
+            </div>
+          </div>
+
+          <!-- 6. Dylan -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="dylan" data-gender="male">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  DL
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Dylan</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Male</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Calm, Meditative &amp; Smooth</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Audiobook</span>
+              <span class="text-outline text-[11px] font-label-mono-sm">Idle</span>
+            </div>
+          </div>
+
+          <!-- 7. Sohee -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="sohee" data-gender="female">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  SH
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Sohee</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Female</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Refined, Crisp &amp; Clear</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">News/Media</span>
+              <span class="text-tertiary text-[11px] font-label-mono-sm">Ready</span>
+            </div>
+          </div>
+
+          <!-- 8. Ono Anna -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="ono_anna" data-gender="female">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  OA
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Ono Anna</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Female</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Melodic, Japanese Polyglot</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Multi-lingual</span>
+              <span class="text-tertiary text-[11px] font-label-mono-sm">Ready</span>
+            </div>
+          </div>
+
+          <!-- 9. Uncle Fu -->
+          <div class="voice-card group relative bg-surface-container rounded-lg border border-outline-variant/30 p-2.5 hover:border-outline-variant/70 hover:bg-surface-container-high transition-all cursor-pointer flex flex-col justify-between space-y-2" data-voice="uncle_fu" data-gender="male">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-md bg-surface-container-highest flex items-center justify-center font-label-mono-md text-label-mono-md text-secondary border border-outline-variant/30">
+                  UF
+                </div>
+                <div>
+                  <h3 class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Uncle Fu</h3>
+                  <span class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Male</span>
+                </div>
+              </div>
+              <button class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-secondary border border-outline-variant/20 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+              </button>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline leading-tight">Authoritative &amp; Resonant</p>
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
+              <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-mono-sm text-[10px]">Broadcast</span>
+              <span class="text-tertiary text-[11px] font-label-mono-sm">Ready</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="header-center">
-        <div class="system-status-pill" id="system-status-pill">
-          <span class="status-indicator"></span>
-          <span class="status-text" id="status-text">Engine Online</span>
-          <span class="status-meta">Port 8000</span>
+      <!-- Synthesis Settings & Audio Tuning Bar -->
+      <div class="bg-surface-container-low rounded-xl border border-outline-variant/30 p-space-md flex flex-col space-y-space-md">
+        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-secondary" data-icon="tune">tune</span>
+            <h3 class="font-body-sm text-body-sm font-semibold text-on-surface">Acoustic Conditioning &amp; Tokenizer</h3>
+          </div>
+          <span class="font-label-mono-sm text-label-mono-sm text-outline">Vocoder: HiFi-GAN 24kHz</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+          <!-- Target Language Selector -->
+          <div class="flex flex-col space-y-1">
+            <label for="language-select" class="font-label-mono-sm text-label-mono-sm text-on-surface-variant">Target Synthesis Language</label>
+            <div class="relative">
+              <select id="language-select" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg py-1.5 px-2.5 text-on-surface font-body-sm text-body-sm focus:outline-none focus:border-primary pr-8 appearance-none cursor-pointer">
+                <option value="english" selected>English (US/UK)</option>
+                <option value="chinese">Chinese (Mandarin)</option>
+                <option value="japanese">Japanese</option>
+                <option value="korean">Korean</option>
+                <option value="german">German</option>
+                <option value="french">French</option>
+                <option value="spanish">Spanish</option>
+                <option value="russian">Russian</option>
+                <option value="italian">Italian</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none">expand_more</span>
+            </div>
+          </div>
+          <!-- Sliders: Pace & Diffusion Temperature -->
+          <div class="flex flex-col justify-between space-y-2">
+            <!-- Pace Slider -->
+            <div class="flex flex-col space-y-1">
+              <div class="flex justify-between items-center font-label-mono-sm text-label-mono-sm">
+                <span class="text-on-surface-variant">Speech Cadence / Pace</span>
+                <span class="text-secondary font-semibold" id="pace-val">1.00x</span>
+              </div>
+              <div class="relative flex items-center">
+                <input id="pace-slider" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary" max="1.5" min="0.75" step="0.05" type="range" value="1.0"/>
+              </div>
+            </div>
+            <!-- Temperature Slider -->
+            <div class="flex flex-col space-y-1">
+              <div class="flex justify-between items-center font-label-mono-sm text-label-mono-sm">
+                <span class="text-on-surface-variant">Diffusion Temperature</span>
+                <span class="text-primary font-semibold" id="temp-val">0.68</span>
+              </div>
+              <div class="relative flex items-center">
+                <input id="temp-slider" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="1.0" min="0.1" step="0.02" type="range" value="0.68"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Smart Markdown Cleaner Toggle -->
+        <div class="p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-between">
+          <div class="flex flex-col pr-3">
+            <div class="flex items-center space-x-1.5">
+              <span class="font-body-sm text-body-sm font-medium text-on-surface">Smart Markdown Cleaner</span>
+              <span class="px-1.5 py-0.2 rounded bg-tertiary-container/30 text-tertiary font-label-mono-sm text-[10px]">Acoustic Guard</span>
+            </div>
+            <p class="font-label-mono-sm text-label-mono-sm text-outline mt-0.5 leading-snug">
+              Strip markdown syntax, symbols, raw URLs, and code blocks before acoustic tokenizer to prevent vocal glitches.
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+            <input id="markdown-cleaner-toggle" checked="" class="sr-only peer" type="checkbox"/>
+            <div class="w-8 h-4 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN (7 Columns): Text Synthesis Studio, Waveform Master, & Recent History -->
+    <section class="xl:col-span-7 flex flex-col space-y-gutter">
+      <!-- Script & Text Synthesis Studio (Center Stage) -->
+      <div class="bg-surface-container-low rounded-xl border border-outline-variant/30 p-space-md flex flex-col space-y-space-sm shadow-sm flex-1">
+        <!-- Header row with preset chips and clear button -->
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/20 pb-2.5">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-secondary" data-icon="edit_note">edit_note</span>
+            <span class="font-title-md text-title-md font-semibold text-on-surface">Speech Script Studio</span>
+          </div>
+          <!-- Preset Chips -->
+          <div class="flex items-center space-x-1.5">
+            <span class="font-label-mono-sm text-label-mono-sm text-outline hidden sm:inline">Presets:</span>
+            <button id="preset-blog" class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-mono-sm text-label-mono-sm border border-outline-variant/30 transition-colors">
+              Blog Excerpt
+            </button>
+            <button id="preset-tech" class="px-2 py-1 rounded bg-surface-container-high text-secondary font-label-mono-sm text-label-mono-sm border border-secondary/30 transition-colors">
+              Tech Overview
+            </button>
+            <button id="preset-greeting" class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-mono-sm text-label-mono-sm border border-outline-variant/30 transition-colors">
+              Quick Greeting
+            </button>
+            <button id="clear-btn" class="p-1 rounded text-outline hover:text-error transition-colors" title="Clear Text">
+              <span class="material-symbols-outlined" data-icon="delete_sweep">delete_sweep</span>
+            </button>
+          </div>
+        </div>
+        <!-- Rich Text Area with Phoneme / SSML Styling -->
+        <div class="relative flex-1 min-h-[160px]">
+          <textarea id="speech-input" class="w-full h-full min-h-[160px] bg-surface-container-lowest text-on-surface font-body-lg text-body-lg p-space-md rounded-lg border border-outline-variant/30 focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none resize-y leading-relaxed" placeholder="Type or paste the speech script here...">The Qwen3-TTS architecture integrates non-autoregressive latent diffusion with an ultra-low latency acoustic tokenizer. By leveraging dense speaker embeddings and conditioning vectors, the neural engine preserves vocal warmth, natural dynamic breathing pauses, and inflection contours across diverse syntactic boundaries without artifacting.</textarea>
+        </div>
+        <!-- Footer Utility Bar (Stats & Primary Generate CTA) -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <!-- Text Stats -->
+          <div class="flex items-center space-x-space-md font-label-mono-sm text-label-mono-sm text-on-surface-variant">
+            <span class="flex items-center space-x-1">
+              <span class="material-symbols-outlined text-outline" style="font-size: 15px;">format_shapes</span>
+              <span id="char-count">468 characters</span>
+            </span>
+            <span class="text-outline">•</span>
+            <span id="word-count">74 words</span>
+            <span class="text-outline">•</span>
+            <span class="text-secondary font-semibold" id="est-duration">~28.4s estimated audio</span>
+          </div>
+          <!-- Primary CTA Button (Neural Violet Glow) -->
+          <button id="synthesize-btn" class="px-5 py-2.5 rounded-lg bg-primary-container hover:bg-opacity-90 text-on-primary font-body-sm text-body-sm font-semibold flex items-center space-x-2 shadow-md shadow-primary/30 transition-all duration-150 active:scale-[0.98]">
+            <span class="material-symbols-outlined fill-icon" id="btn-icon" data-icon="auto_awesome">auto_awesome</span>
+            <span id="btn-spinner" class="hidden w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+            <span id="btn-label">Generate Speech</span>
+            <span class="px-1.5 py-0.5 rounded bg-black/20 font-label-mono-sm text-[10px] text-white/90">⌘ + ↵</span>
+          </button>
         </div>
       </div>
 
-      <div class="header-right">
-        <div class="spec-pill">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 11v2"/>
-          </svg>
-          <span>MPS • 24kHz Lossless</span>
+      <!-- Audio Player Master Suite (Playback Deck & Waveform Monitor) -->
+      <div class="bg-surface-container-low rounded-xl border border-outline-variant/30 p-space-md flex flex-col space-y-space-md shadow-sm">
+        <!-- Header row: Current Session Output Meta -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-tertiary" data-icon="waves">waves</span>
+            <span class="font-body-sm text-body-sm font-semibold text-on-surface">Neural Master Playback Deck</span>
+            <span class="text-outline font-label-mono-sm text-label-mono-sm" id="deck-meta-info">• Serena (Warm Narrative)</span>
+          </div>
+          <!-- Timecode Readout -->
+          <div class="font-timecode text-timecode text-secondary tracking-widest bg-surface-container-lowest px-2.5 py-1 rounded border border-outline-variant/30">
+            <span id="current-time">00:00.0</span> <span class="text-outline">/</span> <span id="total-duration">00:00.0</span>
+          </div>
         </div>
-        <a href="https://github.com/datasciritwik/nari-qwen3-tts" target="_blank" rel="noopener noreferrer" class="github-link-btn" title="View on GitHub">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-        </a>
+
+        <!-- Full-Width High-Resolution Waveform Visualization -->
+        <div class="relative w-full h-20 bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-2 flex items-center overflow-hidden group cursor-pointer" id="waveform-box">
+          <canvas id="waveform-canvas" class="w-full h-full"></canvas>
+          <div id="visualizer-idle-notice" class="absolute inset-0 flex items-center justify-center space-x-2 pointer-events-none text-outline font-label-mono-sm text-label-mono-sm opacity-60">
+            <span class="material-symbols-outlined" style="font-size: 16px;">graphic_eq</span>
+            <span>Frequency visualizer activates during playback</span>
+          </div>
+        </div>
+
+        <!-- Master Transport Controls & Utilities Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <!-- Transport Action Group -->
+          <div class="flex items-center space-x-2">
+            <!-- Step Back -->
+            <button id="rewind-btn" class="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Rewind 5s">
+              <span class="material-symbols-outlined" data-icon="replay_5">replay_5</span>
+            </button>
+            <!-- Master Play / Pause Button with Glowing Aura -->
+            <button id="play-pause-btn" class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center shadow-[0_0_14px_rgba(76,215,246,0.5)] hover:scale-105 active:scale-95 transition-all cursor-pointer">
+              <span class="material-symbols-outlined fill-icon text-surface" id="icon-play" style="font-size: 22px;">play_arrow</span>
+              <span class="material-symbols-outlined fill-icon text-surface hidden" id="icon-pause" style="font-size: 22px;">pause</span>
+            </button>
+            <!-- Step Forward -->
+            <button id="forward-btn" class="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Forward 5s">
+              <span class="material-symbols-outlined" data-icon="forward_5">forward_5</span>
+            </button>
+            <!-- Scrubber bar -->
+            <input id="seek-slider" class="w-32 sm:w-48 h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary" max="100" min="0" type="range" value="0"/>
+          </div>
+          <!-- Speed Pills -->
+          <div class="flex items-center space-x-1 bg-surface-container-lowest p-1 rounded-lg border border-outline-variant/30">
+            <span class="font-label-mono-sm text-label-mono-sm text-outline px-1.5">Speed:</span>
+            <button class="speed-btn px-2 py-0.5 rounded bg-secondary text-on-secondary font-label-mono-sm text-label-mono-sm font-semibold" data-speed="1.0">1.0x</button>
+            <button class="speed-btn px-2 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-mono-sm text-label-mono-sm" data-speed="1.25">1.25x</button>
+            <button class="speed-btn px-2 py-0.5 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-mono-sm text-label-mono-sm" data-speed="1.5">1.5x</button>
+          </div>
+          <!-- Volume Slider & Export WAV Button -->
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2">
+              <button id="mute-btn" class="text-outline hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined" id="volume-icon" data-icon="volume_up">volume_up</span>
+              </button>
+              <input id="volume-slider" class="w-20 h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary" max="100" min="0" type="range" value="84"/>
+            </div>
+            <div class="h-4 w-px bg-outline-variant/30"></div>
+            <a id="download-audio-btn" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-secondary border border-secondary/40 font-body-sm text-body-sm font-medium flex items-center space-x-1.5 transition-all cursor-pointer" download="qwen3_speech.wav">
+              <span class="material-symbols-outlined" data-icon="download">download</span>
+              <span>Download WAV</span>
+            </a>
+          </div>
+        </div>
       </div>
-    </header>
 
-    <!-- Main Workspace -->
-    <main class="studio-main">
-      <!-- Voice Carousel Section -->
-      <section class="voice-section" aria-label="Select Voice">
-        <div class="section-label-bar">
-          <div class="label-with-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-            <span class="section-title">Speaker Persona</span>
+      <!-- Recent Generations & Clip History Feed -->
+      <div class="bg-surface-container-low rounded-xl border border-outline-variant/30 p-space-md flex flex-col space-y-space-sm shadow-sm">
+        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+            <h3 class="font-body-sm text-body-sm font-semibold text-on-surface">Recent Generations (<span id="history-count">4</span>)</h3>
           </div>
-
-          <div class="voice-filter-tabs">
-            <button type="button" class="tab-btn active" data-filter="all">All Voices (9)</button>
-            <button type="button" class="tab-btn" data-filter="male">Male</button>
-            <button type="button" class="tab-btn" data-filter="female">Female</button>
-          </div>
+          <button id="clear-history-btn" class="font-label-mono-sm text-label-mono-sm text-outline hover:text-error transition-colors">
+            Clear History
+          </button>
         </div>
-
-        <!-- Horizontal Voice Scroll Ribbon -->
-        <div class="voice-ribbon-container">
-          <div class="voice-ribbon" id="voice-ribbon">
-            <!-- Voice Chip: Ryan -->
-            <button type="button" class="voice-chip active" data-voice="ryan" data-gender="male" id="chip-ryan">
-              <div class="avatar-ring avatar-ryan">
-                <span>R</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Ryan</span>
-                <span class="chip-desc">Natural & Expressive</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Serena -->
-            <button type="button" class="voice-chip" data-voice="serena" data-gender="female" id="chip-serena">
-              <div class="avatar-ring avatar-serena">
-                <span>S</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Serena</span>
-                <span class="chip-desc">Warm Narrative</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Aiden -->
-            <button type="button" class="voice-chip" data-voice="aiden" data-gender="male" id="chip-aiden">
-              <div class="avatar-ring avatar-aiden">
-                <span>A</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Aiden</span>
-                <span class="chip-desc">Deep Baritone</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Vivian -->
-            <button type="button" class="voice-chip" data-voice="vivian" data-gender="female" id="chip-vivian">
-              <div class="avatar-ring avatar-vivian">
-                <span>V</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Vivian</span>
-                <span class="chip-desc">Bright & Clear</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Eric -->
-            <button type="button" class="voice-chip" data-voice="eric" data-gender="male" id="chip-eric">
-              <div class="avatar-ring avatar-eric">
-                <span>E</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Eric</span>
-                <span class="chip-desc">Conversational</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Dylan -->
-            <button type="button" class="voice-chip" data-voice="dylan" data-gender="male" id="chip-dylan">
-              <div class="avatar-ring avatar-dylan">
-                <span>D</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Dylan</span>
-                <span class="chip-desc">Smooth & Calm</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Sohee -->
-            <button type="button" class="voice-chip" data-voice="sohee" data-gender="female" id="chip-sohee">
-              <div class="avatar-ring avatar-sohee">
-                <span>SH</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Sohee</span>
-                <span class="chip-desc">Refined & Polished</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Ono Anna -->
-            <button type="button" class="voice-chip" data-voice="ono_anna" data-gender="female" id="chip-ono-anna">
-              <div class="avatar-ring avatar-ono">
-                <span>OA</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Ono Anna</span>
-                <span class="chip-desc">Crisp & Melodic</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-
-            <!-- Voice Chip: Uncle Fu -->
-            <button type="button" class="voice-chip" data-voice="uncle_fu" data-gender="male" id="chip-uncle-fu">
-              <div class="avatar-ring avatar-fu">
-                <span>UF</span>
-              </div>
-              <div class="chip-text">
-                <span class="chip-name">Uncle Fu</span>
-                <span class="chip-desc">Authoritative</span>
-              </div>
-              <span class="active-badge"></span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Central Studio Editor Card -->
-      <section class="editor-section">
-        <div class="studio-card editor-card">
-          <!-- Editor Top Bar -->
-          <div class="editor-topbar">
-            <div class="editor-title-group">
-              <span class="badge-tag">SCRIPT</span>
-              <span class="editor-hint">Type or paste your text below</span>
-            </div>
-
-            <div class="presets-group">
-              <span class="presets-label">Presets:</span>
-              <div class="preset-pills">
-                <button type="button" class="preset-pill" id="preset-blog">
-                  <span>📄 Blog Excerpt</span>
-                </button>
-                <button type="button" class="preset-pill" id="preset-tech">
-                  <span>⚡ Tech Intro</span>
-                </button>
-                <button type="button" class="preset-pill" id="preset-greeting">
-                  <span>👋 Quick Greeting</span>
-                </button>
+        <div class="divide-y divide-outline-variant/20" id="history-feed">
+          <!-- Default clips from Stitch design system -->
+          <div class="py-2.5 flex items-center justify-between group hover:bg-surface-container/50 px-2 rounded-lg transition-colors">
+            <div class="flex items-center space-x-3">
+              <button class="w-7 h-7 rounded-full bg-primary/20 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 16px;">play_arrow</span>
+              </button>
+              <div class="flex flex-col">
+                <div class="flex items-center space-x-2">
+                  <span class="font-body-sm text-body-sm font-medium text-on-surface">Neural speech benchmark test 03</span>
+                  <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-primary font-label-mono-sm text-[10px]">Serena</span>
+                </div>
+                <div class="flex items-center space-x-2 font-label-mono-sm text-label-mono-sm text-outline mt-0.5">
+                  <span>28.4s</span>
+                  <span>•</span>
+                  <span>1.3 MB</span>
+                  <span>•</span>
+                  <span>2 mins ago</span>
+                </div>
               </div>
             </div>
-          </div>
-
-          <!-- Textarea Area -->
-          <div class="textarea-container">
-            <textarea
-              id="speech-input"
-              class="studio-textarea"
-              placeholder="Enter text or markdown to generate neural speech..."
-              rows="6"
-              spellcheck="false"
-            ></textarea>
-          </div>
-
-          <!-- Editor Bottom Toolbar with Controls & Generate Action -->
-          <div class="editor-bottom-bar">
-            <!-- Left Controls: Character count, cleaner toggle, language -->
-            <div class="control-group-left">
-              <div class="stats-counter" id="stats-counter">
-                <span class="char-count" id="char-count">0 characters</span>
-                <span class="counter-separator">•</span>
-                <span class="est-duration" id="est-duration">~0s audio</span>
-              </div>
-
-              <div class="divider-v"></div>
-
-              <!-- Language Select Dropdown -->
-              <div class="language-dropdown-wrapper">
-                <svg class="lang-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-                <select id="language-select" class="compact-select">
-                  <option value="english" selected>English</option>
-                  <option value="chinese">Chinese (中文)</option>
-                  <option value="japanese">Japanese (日本語)</option>
-                  <option value="korean">Korean (한국어)</option>
-                  <option value="german">German (Deutsch)</option>
-                  <option value="french">French (Français)</option>
-                  <option value="spanish">Spanish (Español)</option>
-                  <option value="russian">Russian (Русский)</option>
-                  <option value="italian">Italian (Italiano)</option>
-                </select>
-              </div>
-
-              <div class="divider-v"></div>
-
-              <!-- Smart Markdown Cleaner Toggle -->
-              <label class="cleaner-toggle-label" title="Automatically strips # headers, arrows and backticks so speech stays completely natural">
-                <input type="checkbox" id="markdown-cleaner-toggle" checked>
-                <span class="toggle-slider"></span>
-                <span class="toggle-text">Clean Markdown</span>
-              </label>
-
-              <button type="button" class="text-action-btn" id="clear-btn" title="Clear text">
-                Clear
+            <div class="flex items-center space-x-2">
+              <button class="p-1.5 rounded hover:bg-surface-container-highest text-outline hover:text-secondary transition-colors" title="Download WAV">
+                <span class="material-symbols-outlined" data-icon="download">download</span>
               </button>
             </div>
+          </div>
 
-            <!-- Right Controls: Primary CTA Generate Button -->
-            <div class="control-group-right">
-              <button type="button" class="generate-btn" id="synthesize-btn">
-                <span class="btn-spinner hidden" id="btn-spinner"></span>
-                <svg class="btn-icon" id="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"></polygon>
-                </svg>
-                <span class="btn-label" id="btn-label">Generate Speech</span>
-                <span class="shortcut-badge">⌘↵</span>
+          <div class="py-2.5 flex items-center justify-between group hover:bg-surface-container/50 px-2 rounded-lg transition-colors">
+            <div class="flex items-center space-x-3">
+              <button class="w-7 h-7 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center hover:bg-secondary hover:text-on-secondary transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 16px;">play_arrow</span>
+              </button>
+              <div class="flex flex-col">
+                <div class="flex items-center space-x-2">
+                  <span class="font-body-sm text-body-sm font-medium text-on-surface">Product launch teaser narration</span>
+                  <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-on-surface-variant font-label-mono-sm text-[10px]">Ryan</span>
+                </div>
+                <div class="flex items-center space-x-2 font-label-mono-sm text-label-mono-sm text-outline mt-0.5">
+                  <span>45.1s</span>
+                  <span>•</span>
+                  <span>2.1 MB</span>
+                  <span>•</span>
+                  <span>14 mins ago</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="p-1.5 rounded hover:bg-surface-container-highest text-outline hover:text-secondary transition-colors" title="Download WAV">
+                <span class="material-symbols-outlined" data-icon="download">download</span>
               </button>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  </main>
 
-      <!-- Audio Player & Waveform Deck -->
-      <section class="player-section">
-        <div class="studio-card player-deck">
-          <div class="player-deck-header">
-            <div class="player-info-meta">
-              <span class="deck-title">AUDIO MASTER</span>
-              <span class="deck-meta-info" id="deck-meta-info">Ready to synthesize</span>
-            </div>
+  <!-- STUDIO PERSISTENT TELEMETRY FOOTER -->
+  <footer class="w-full bg-surface-container-lowest border-t border-outline-variant/30 py-2.5 px-space-lg flex flex-wrap items-center justify-between text-on-surface-variant font-label-mono-sm text-label-mono-sm">
+    <div class="flex items-center space-x-space-md">
+      <div class="flex items-center space-x-1.5">
+        <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+        <span class="text-on-surface">Qwen3-TTS Engine Core v3.2</span>
+      </div>
+      <span class="text-outline">|</span>
+      <span>Inference: FP16 Metal Performance Shaders</span>
+      <span class="text-outline">|</span>
+      <span>Sampler: Euler-Ancestral</span>
+    </div>
+    <div class="flex items-center space-x-space-lg">
+      <span class="text-outline">Adapted for Apple Silicon from original <a href="https://github.com/nari-labs/nari-qwen3-tts" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Nari Qwen3-TTS</a> by <a href="https://nari-labs.com" target="_blank" rel="noopener noreferrer" class="text-secondary hover:underline">Nari Labs</a></span>
+    </div>
+  </footer>
 
-            <div class="deck-actions">
-              <div class="speed-selector" id="speed-selector">
-                <button type="button" class="speed-chip active" data-speed="1.0">1.0x</button>
-                <button type="button" class="speed-chip" data-speed="1.25">1.25x</button>
-                <button type="button" class="speed-chip" data-speed="1.5">1.5x</button>
-              </div>
-
-              <a id="download-audio-btn" class="download-btn disabled" download="qwen3_speech.wav" title="Download WAV Audio">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                <span>Download WAV</span>
-              </a>
-            </div>
-          </div>
-
-          <!-- Dynamic Waveform Visualizer -->
-          <div class="waveform-deck-body">
-            <canvas id="waveform-canvas" height="64"></canvas>
-            <div class="visualizer-idle-notice" id="visualizer-idle-notice">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v20M17 5v14M7 8v8M22 10v4M2 11v2"/>
-              </svg>
-              <span>Waveform visualizer will animate during playback</span>
-            </div>
-          </div>
-
-          <!-- Native Audio Controls Bar -->
-          <div class="player-controls-strip">
-            <audio id="native-audio" preload="auto"></audio>
-
-            <!-- Play / Pause Circular Button -->
-            <button type="button" class="master-play-btn" id="play-pause-btn" disabled aria-label="Play audio">
-              <svg class="icon-play" id="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              <svg class="icon-pause hidden" id="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-              </svg>
-            </button>
-
-            <!-- Progress Scrubber -->
-            <div class="scrubber-container">
-              <input type="range" class="modern-scrubber" id="seek-slider" min="0" max="100" value="0" disabled>
-              <div class="time-readout">
-                <span id="current-time">0:00</span>
-                <span class="time-divider">/</span>
-                <span id="total-duration">0:00</span>
-              </div>
-            </div>
-
-            <!-- Volume Slider -->
-            <div class="volume-container">
-              <button type="button" class="mute-btn" id="mute-btn" title="Mute/Unmute">
-                <svg id="volume-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                </svg>
-              </button>
-              <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1">
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- History Strip -->
-      <section class="history-section">
-        <div class="history-bar">
-          <div class="history-header">
-            <span class="history-title">Recent Clips</span>
-            <span class="history-count" id="history-count">0 items</span>
-          </div>
-          <div class="history-chips-row" id="history-chips-row">
-            <div class="history-empty" id="history-empty">Generated speech clips will appear here for fast replay</div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Sleek Minimalist Footer -->
-    <footer class="studio-footer">
-      <p>
-        Adapted for Apple Silicon from the original 
-        <a href="https://github.com/nari-labs/nari-qwen3-tts" target="_blank" rel="noopener noreferrer">Nari Qwen3-TTS</a> 
-        by <a href="https://nari-labs.com" target="_blank" rel="noopener noreferrer">Nari Labs</a>.
-      </p>
-    </footer>
-  </div>
-
-  <script src="/static/app.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
