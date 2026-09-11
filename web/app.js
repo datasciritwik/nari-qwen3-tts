@@ -169,7 +169,7 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     const startTime = performance.now();
 
     try {
-      const endpoint = window.location.port ? '/v1/audio/speech' : 'http://127.0.0.1:8000/v1/audio/speech';
+      const endpoint = window.location.port === '8000' ? '/v1/audio/speech' : 'http://127.0.0.1:8000/v1/audio/speech';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
