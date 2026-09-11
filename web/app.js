@@ -1,58 +1,68 @@
 /**
- * Nari Qwen3-TTS Frontend Application Logic
+ * Nari Qwen3-TTS — Voice Studio Application Logic
+ * High-performance, responsive UI controller with Web Audio visualizer
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Elements
-  const backendStatusBadge = document.getElementById('backend-status-badge');
-  const statusLabel = document.getElementById('status-label');
-  const voiceCards = document.querySelectorAll('.voice-card');
-  const selectedVoiceBadge = document.getElementById('selected-voice-badge');
-  const languageSelect = document.getElementById('language-select');
-  const markdownToggle = document.getElementById('markdown-cleaner-toggle');
+  // --- Header & Status Elements ---
+  const systemStatusPill = document.getElementById('system-status-pill');
+  const statusText = document.getElementById('status-text');
+
+  // --- Voice Selection & Filter Elements ---
+  const voiceChips = document.querySelectorAll('.voice-chip');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+
+  // --- Editor & Controls Elements ---
   const speechInput = document.getElementById('speech-input');
   const charCount = document.getElementById('char-count');
+  const estDuration = document.getElementById('est-duration');
+  const languageSelect = document.getElementById('language-select');
+  const markdownToggle = document.getElementById('markdown-cleaner-toggle');
   const clearBtn = document.getElementById('clear-btn');
   const synthesizeBtn = document.getElementById('synthesize-btn');
   const btnSpinner = document.getElementById('btn-spinner');
   const btnIcon = document.getElementById('btn-icon');
-  const btnText = document.getElementById('btn-text');
-  
-  // Presets
-  const sampleBtnBlog = document.getElementById('sample-btn-blog');
-  const sampleBtnTech = document.getElementById('sample-btn-tech');
-  const sampleBtnShort = document.getElementById('sample-btn-short');
+  const btnLabel = document.getElementById('btn-label');
 
-  // Audio Player Elements
+  // --- Presets ---
+  const presetBlog = document.getElementById('preset-blog');
+  const presetTech = document.getElementById('preset-tech');
+  const presetGreeting = document.getElementById('preset-greeting');
+
+  // --- Audio Player Elements ---
+  const deckMetaInfo = document.getElementById('deck-meta-info');
   const nativeAudio = document.getElementById('native-audio');
   const playPauseBtn = document.getElementById('play-pause-btn');
   const iconPlay = document.getElementById('icon-play');
   const iconPause = document.getElementById('icon-pause');
   const seekSlider = document.getElementById('seek-slider');
-  const currentTimeDisplay = document.getElementById('current-time');
-  const totalDurationDisplay = document.getElementById('total-duration');
+  const currentTimeEl = document.getElementById('current-time');
+  const totalDurationEl = document.getElementById('total-duration');
   const volumeSlider = document.getElementById('volume-slider');
+  const muteBtn = document.getElementById('mute-btn');
   const downloadAudioBtn = document.getElementById('download-audio-btn');
-  const playerMeta = document.getElementById('player-meta');
-  const waveformPlaceholder = document.getElementById('waveform-placeholder');
+  const speedChips = document.querySelectorAll('.speed-chip');
+  const visualizerIdleNotice = document.getElementById('visualizer-idle-notice');
   const waveformCanvas = document.getElementById('waveform-canvas');
   const canvasCtx = waveformCanvas.getContext('2d');
 
-  // History Elements
-  const historyList = document.getElementById('history-list');
+  // --- History Elements ---
   const historyCount = document.getElementById('history-count');
+  const historyChipsRow = document.getElementById('history-chips-row');
   const historyEmpty = document.getElementById('history-empty');
 
-  // State
+  // --- Application State ---
   let selectedVoice = 'ryan';
   let isGenerating = false;
   let historyItems = [];
   let audioContext = null;
   let analyser = null;
   let audioSource = null;
-  let animationFrameId = null;
+  let visualizerAnimId = null;
+  let idleAnimPhase = 0;
+  let currentSpeed = 1.0;
 
-  // Presets Data
+  // --- Preset Texts ---
   const PRESETS = {
     blog: `One call to the cheap model, with the three defences its quirks require.
 
@@ -68,91 +78,137 @@ Three things about agy are load-bearing and were each found by it going wrong, s
 
 3. It "repairs" a schema violation by mutilating the content. Asked for three items it drafted four, then dropped one AND changed initialCapacity 4 to 3 so the array lab lost the free slot it exists to show. Schema-valid, wrong. Hence check equals: a caller passes the semantic rule the schema cannot state, and a violation is a raised error, not a warning nobody reads.`,
     tech: `Welcome to Nari Qwen3-TTS, running high-performance neural voice synthesis locally on Apple Silicon. This serving engine delivers ultra-low latency audio generation with expressive custom voices.`,
-    short: `Hello! This is Qwen3 TTS running smoothly on Apple Silicon.`
+    greeting: `Hello! This is Qwen3 TTS running smoothly on Apple Silicon.`
   };
 
-  // Initial preset
-  speechInput.value = PRESETS.short;
-  updateCharCount();
+  // Set initial text
+  speechInput.value = PRESETS.greeting;
+  updateStats();
 
-  // 1. Health Check
+  // Resize waveform canvas to match container width
+  function resizeCanvas() {
+    if (waveformCanvas.parentElement) {
+      waveformCanvas.width = waveformCanvas.parentElement.clientWidth;
+      waveformCanvas.height = waveformCanvas.parentElement.clientHeight || 64;
+    }
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // =========================================================================
+  // 1. Backend Server Health Monitor
+  // =========================================================================
   async function checkBackendHealth() {
+    const healthUrl = window.location.port === '8000' ? '/health' : 'http://127.0.0.1:8000/health';
     try {
-      const res = await fetch('/health');
+      const res = await fetch(healthUrl);
       if (res.ok) {
         const data = await res.json();
         if (data.alive) {
-          backendStatusBadge.classList.remove('error');
-          statusLabel.textContent = 'Server Ready (Port 8000)';
+          systemStatusPill.classList.remove('error');
+          statusText.textContent = 'Engine Online';
           return true;
         }
       }
-      throw new Error('Server not ready');
-    } catch (err) {
-      // Try absolute localhost if running standalone
-      try {
-        const res2 = await fetch('http://127.0.0.1:8000/health');
-        if (res2.ok) {
-          backendStatusBadge.classList.remove('error');
-          statusLabel.textContent = 'Connected (Port 8000)';
-          return true;
-        }
-      } catch (e) {}
-      backendStatusBadge.classList.add('error');
-      statusLabel.textContent = 'Server Offline';
+      throw new Error('Offline');
+    } catch {
+      systemStatusPill.classList.add('error');
+      statusText.textContent = 'Engine Offline';
       return false;
     }
   }
   checkBackendHealth();
   setInterval(checkBackendHealth, 10000);
 
-  // 2. Voice Selection
-  voiceCards.forEach(card => {
-    card.addEventListener('click', () => {
-      voiceCards.forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      selectedVoice = card.getAttribute('data-voice');
-      selectedVoiceBadge.textContent = card.querySelector('.voice-name').textContent;
+  // =========================================================================
+  // 2. Voice Selection & Gender Filter Tabs
+  // =========================================================================
+  voiceChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      voiceChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selectedVoice = chip.getAttribute('data-voice');
     });
   });
 
-  // 3. Preset Buttons
-  sampleBtnBlog.addEventListener('click', () => {
-    speechInput.value = PRESETS.blog;
-    updateCharCount();
-  });
-  sampleBtnTech.addEventListener('click', () => {
-    speechInput.value = PRESETS.tech;
-    updateCharCount();
-  });
-  sampleBtnShort.addEventListener('click', () => {
-    speechInput.value = PRESETS.short;
-    updateCharCount();
+  tabBtns.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabBtns.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.getAttribute('data-filter');
+
+      voiceChips.forEach(chip => {
+        const gender = chip.getAttribute('data-gender');
+        if (filter === 'all' || gender === filter) {
+          chip.style.display = 'flex';
+        } else {
+          chip.style.display = 'none';
+        }
+      });
+    });
   });
 
-  // 4. Character Count & Clear
-  function updateCharCount() {
-    charCount.textContent = `${speechInput.value.length} characters`;
-  }
-  speechInput.addEventListener('input', updateCharCount);
-  clearBtn.addEventListener('click', () => {
-    speechInput.value = '';
-    updateCharCount();
+  // =========================================================================
+  // 3. Preset Buttons
+  // =========================================================================
+  presetBlog.addEventListener('click', () => {
+    speechInput.value = PRESETS.blog;
+    updateStats();
+    speechInput.focus();
+  });
+  presetTech.addEventListener('click', () => {
+    speechInput.value = PRESETS.tech;
+    updateStats();
+    speechInput.focus();
+  });
+  presetGreeting.addEventListener('click', () => {
+    speechInput.value = PRESETS.greeting;
+    updateStats();
     speechInput.focus();
   });
 
-  // 5. Text Normalizer
+  // =========================================================================
+  // 4. Character & Duration Estimator
+  // =========================================================================
+  function updateStats() {
+    const len = speechInput.value.length;
+    charCount.textContent = `${len} character${len === 1 ? '' : 's'}`;
+    // Average speech speaking rate ~14 characters per second
+    const estSec = Math.max(1, Math.round(len / 14));
+    estDuration.textContent = `~${estSec}s audio`;
+  }
+  speechInput.addEventListener('input', updateStats);
+
+  clearBtn.addEventListener('click', () => {
+    speechInput.value = '';
+    updateStats();
+    speechInput.focus();
+  });
+
+  // Keyboard shortcut: Cmd/Ctrl + Enter to synthesize
+  speechInput.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      synthesizeBtn.click();
+    }
+  });
+
+  // =========================================================================
+  // 5. Smart Markdown Normalization
+  // =========================================================================
   function cleanMarkdown(text) {
     return text
-      .replace(/^(#+)\s*/gm, '')      // strip markdown header hashes (# Heading)
-      .replace(/`([^`]+)`/g, '$1')     // strip backticks (`code` -> code)
-      .replace(/->/g, 'to')            // convert arrows -> to 'to'
-      .replace(/--([a-zA-Z0-9_-]+)/g, '$1') // strip CLI flag dashes
-      .replace(/([a-zA-Z0-9_]+)\//g, '$1') // strip trailing directory slashes (engine/ -> engine)
+      .replace(/^(#+)\s*/gm, '')             // strip markdown heading hashes (# Heading)
+      .replace(/`([^`]+)`/g, '$1')            // strip backticks (`code` -> code)
+      .replace(/->/g, 'to')                   // convert arrows -> to 'to'
+      .replace(/--([a-zA-Z0-9_-]+)/g, '$1')   // strip CLI flag dashes (--flag -> flag)
+      .replace(/([a-zA-Z0-9_]+)\//g, '$1')    // strip trailing slashes (engine/ -> engine)
       .trim();
   }
 
-  // 6. Synthesize Speech Action
+  // =========================================================================
+  // 6. Speech Generation Action
+  // =========================================================================
   synthesizeBtn.addEventListener('click', async () => {
     const rawText = speechInput.value.trim();
     if (!rawText || isGenerating) return;
@@ -163,8 +219,8 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     synthesizeBtn.disabled = true;
     btnSpinner.classList.remove('hidden');
     btnIcon.classList.add('hidden');
-    btnText.textContent = 'Synthesizing...';
-    playerMeta.textContent = 'Generating neural audio on Apple Silicon...';
+    btnLabel.textContent = 'Synthesizing...';
+    deckMetaInfo.textContent = `Synthesizing with voice "${capitalize(selectedVoice)}" on Apple Silicon...`;
 
     const startTime = performance.now();
 
@@ -188,7 +244,7 @@ Three things about agy are load-bearing and were each found by it going wrong, s
       }
 
       const blob = await response.blob();
-      const durationSec = ((performance.now() - startTime) / 1000).toFixed(1);
+      const elapsedSec = ((performance.now() - startTime) / 1000).toFixed(1);
       const audioUrl = URL.createObjectURL(blob);
 
       loadAudio(audioUrl, {
@@ -196,10 +252,9 @@ Three things about agy are load-bearing and were each found by it going wrong, s
         voice: selectedVoice,
         lang: languageSelect.value,
         sizeKb: (blob.size / 1024).toFixed(1),
-        genTime: durationSec
+        genTime: elapsedSec
       });
 
-      // Add to history
       addToHistory({
         url: audioUrl,
         text: rawText,
@@ -209,35 +264,38 @@ Three things about agy are load-bearing and were each found by it going wrong, s
 
     } catch (err) {
       console.error(err);
-      playerMeta.textContent = `Synthesis error: ${err.message}`;
+      deckMetaInfo.textContent = `Error: ${err.message}`;
       alert(`Synthesis Failed: ${err.message}\nMake sure the local server is running on http://127.0.0.1:8000`);
     } finally {
       isGenerating = false;
       synthesizeBtn.disabled = false;
       btnSpinner.classList.add('hidden');
       btnIcon.classList.remove('hidden');
-      btnText.textContent = 'Generate Speech';
+      btnLabel.textContent = 'Generate Speech';
     }
   });
 
+  // =========================================================================
   // 7. Audio Player Management
+  // =========================================================================
   function loadAudio(url, meta) {
     nativeAudio.src = url;
+    nativeAudio.playbackRate = currentSpeed;
+
     downloadAudioBtn.href = url;
     downloadAudioBtn.classList.remove('disabled');
     downloadAudioBtn.download = `qwen3_${meta.voice}_${Date.now()}.wav`;
 
-    playerMeta.textContent = `Voice: ${capitalize(meta.voice)} • Size: ${meta.sizeKb} KB • Generated in ${meta.genTime}s`;
-    waveformPlaceholder.classList.add('hidden');
+    deckMetaInfo.textContent = `Voice: ${capitalize(meta.voice)} • ${meta.sizeKb} KB • Generated in ${meta.genTime}s`;
+    visualizerIdleNotice.classList.add('hidden');
 
     playPauseBtn.disabled = false;
     seekSlider.disabled = false;
 
     nativeAudio.onloadedmetadata = () => {
-      totalDurationDisplay.textContent = formatTime(nativeAudio.duration);
+      totalDurationEl.textContent = formatTime(nativeAudio.duration);
     };
 
-    // Auto play
     playAudio();
   }
 
@@ -246,7 +304,7 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     nativeAudio.play().then(() => {
       iconPlay.classList.add('hidden');
       iconPause.classList.remove('hidden');
-      startWaveform();
+      visualizerIdleNotice.classList.add('hidden');
     }).catch(e => console.log('Autoplay prevented:', e));
   }
 
@@ -254,7 +312,6 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     nativeAudio.pause();
     iconPlay.classList.remove('hidden');
     iconPause.classList.add('hidden');
-    stopWaveform();
   }
 
   playPauseBtn.addEventListener('click', () => {
@@ -269,7 +326,7 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     if (!isNaN(nativeAudio.duration) && nativeAudio.duration > 0) {
       const pct = (nativeAudio.currentTime / nativeAudio.duration) * 100;
       seekSlider.value = pct;
-      currentTimeDisplay.textContent = formatTime(nativeAudio.currentTime);
+      currentTimeEl.textContent = formatTime(nativeAudio.currentTime);
     }
   });
 
@@ -277,8 +334,7 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     iconPlay.classList.remove('hidden');
     iconPause.classList.add('hidden');
     seekSlider.value = 0;
-    currentTimeDisplay.textContent = '0:00';
-    stopWaveform();
+    currentTimeEl.textContent = '0:00';
   });
 
   seekSlider.addEventListener('input', () => {
@@ -287,16 +343,39 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     }
   });
 
-  volumeSlider.addEventListener('input', () => {
-    nativeAudio.volume = volumeSlider.value;
+  // Speed chips
+  speedChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      speedChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentSpeed = parseFloat(chip.getAttribute('data-speed')) || 1.0;
+      nativeAudio.playbackRate = currentSpeed;
+    });
   });
 
-  // 8. Waveform Visualizer
+  // Volume & Mute
+  volumeSlider.addEventListener('input', () => {
+    nativeAudio.volume = volumeSlider.value;
+    nativeAudio.muted = (volumeSlider.value === '0');
+  });
+
+  muteBtn.addEventListener('click', () => {
+    nativeAudio.muted = !nativeAudio.muted;
+    if (nativeAudio.muted) {
+      volumeSlider.value = 0;
+    } else {
+      volumeSlider.value = nativeAudio.volume || 1;
+    }
+  });
+
+  // =========================================================================
+  // 8. Waveform Visualizer (Ambient & Reactive)
+  // =========================================================================
   function initAudioContext() {
     if (!audioContext) {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 128;
       audioSource = audioContext.createMediaElementSource(nativeAudio);
       audioSource.connect(analyser);
       analyser.connect(audioContext.destination);
@@ -306,71 +385,65 @@ Three things about agy are load-bearing and were each found by it going wrong, s
     }
   }
 
-  function startWaveform() {
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-    function draw() {
-      animationFrameId = requestAnimationFrame(draw);
-      const width = waveformCanvas.width;
-      const height = waveformCanvas.height;
-
-      canvasCtx.clearRect(0, 0, width, height);
-
-      if (analyser && !nativeAudio.paused) {
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        analyser.getByteFrequencyData(dataArray);
-
-        const barWidth = (width / bufferLength) * 2.2;
-        let x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-          const barHeight = (dataArray[i] / 255) * height * 0.85;
-
-          const gradient = canvasCtx.createLinearGradient(0, height, 0, height - barHeight);
-          gradient.addColorStop(0, '#6366f1');
-          gradient.addColorStop(0.5, '#8b5cf6');
-          gradient.addColorStop(1, '#ec4899');
-
-          canvasCtx.fillStyle = gradient;
-          canvasCtx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
-
-          x += barWidth;
-        }
-      } else {
-        // Flat baseline
-        canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-        canvasCtx.lineWidth = 1;
-        canvasCtx.beginPath();
-        canvasCtx.moveTo(0, height / 2);
-        canvasCtx.lineTo(width, height / 2);
-        canvasCtx.stroke();
-      }
-    }
-    draw();
-  }
-
-  function stopWaveform() {
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    }
-    // Draw flat line
+  function renderVisualizerLoop() {
     const width = waveformCanvas.width;
     const height = waveformCanvas.height;
-    canvasCtx.clearRect(0, 0, width, height);
-    canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    canvasCtx.lineWidth = 1;
-    canvasCtx.beginPath();
-    canvasCtx.moveTo(0, height / 2);
-    canvasCtx.lineTo(width, height / 2);
-    canvasCtx.stroke();
-  }
 
+    canvasCtx.clearRect(0, 0, width, height);
+
+    if (analyser && !nativeAudio.paused) {
+      // Active playing: FFT spectrum bars
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyser.getByteFrequencyData(dataArray);
+
+      const barWidth = (width / bufferLength) * 1.5;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = Math.max(3, (dataArray[i] / 255) * height * 0.9);
+
+        const gradient = canvasCtx.createLinearGradient(0, height, 0, height - barHeight);
+        gradient.addColorStop(0, '#6366f1');
+        gradient.addColorStop(0.5, '#8b5cf6');
+        gradient.addColorStop(1, '#ec4899');
+
+        canvasCtx.fillStyle = gradient;
+        canvasCtx.fillRect(x, height - barHeight, barWidth - 1.5, barHeight);
+
+        x += barWidth;
+      }
+    } else {
+      // Idle ambient wave: sleek rhythmic breathing curve
+      idleAnimPhase += 0.03;
+      canvasCtx.beginPath();
+      canvasCtx.lineWidth = 1.5;
+
+      const grad = canvasCtx.createLinearGradient(0, 0, width, 0);
+      grad.addColorStop(0, 'rgba(99, 102, 241, 0.15)');
+      grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.35)');
+      grad.addColorStop(1, 'rgba(236, 72, 153, 0.15)');
+      canvasCtx.strokeStyle = grad;
+
+      const midY = height / 2;
+      for (let x = 0; x < width; x += 4) {
+        const y = midY + Math.sin(x * 0.02 + idleAnimPhase) * 6 * Math.sin(x * 0.005);
+        if (x === 0) canvasCtx.moveTo(x, y);
+        else canvasCtx.lineTo(x, y);
+      }
+      canvasCtx.stroke();
+    }
+
+    visualizerAnimId = requestAnimationFrame(renderVisualizerLoop);
+  }
+  renderVisualizerLoop();
+
+  // =========================================================================
   // 9. History Management
+  // =========================================================================
   function addToHistory(item) {
     historyItems.unshift(item);
-    if (historyItems.length > 8) historyItems.pop();
+    if (historyItems.length > 6) historyItems.pop();
     renderHistory();
   }
 
@@ -383,20 +456,19 @@ Three things about agy are load-bearing and were each found by it going wrong, s
 
     historyEmpty.classList.add('hidden');
     historyCount.textContent = `${historyItems.length} items`;
-    historyList.innerHTML = '';
+    historyChipsRow.innerHTML = '';
 
     historyItems.forEach((item) => {
-      const div = document.createElement('div');
-      div.className = 'history-item';
-      div.innerHTML = `
-        <div class="history-item-left">
-          <span class="history-item-text">${escapeHtml(item.text)}</span>
-          <span class="history-item-details">Voice: ${capitalize(item.voice)} • ${item.timeStr}</span>
-        </div>
-        <button type="button" class="history-play-btn">Replay</button>
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'history-clip-item';
+      chip.title = `Click to replay: "${item.text.replace(/"/g, '&quot;')}"`;
+      chip.innerHTML = `
+        <span class="history-clip-voice">${capitalize(item.voice)}</span>
+        <span class="history-clip-text">${escapeHtml(item.text.slice(0, 32))}${item.text.length > 32 ? '...' : ''}</span>
       `;
 
-      div.querySelector('.history-play-btn').addEventListener('click', () => {
+      chip.addEventListener('click', () => {
         loadAudio(item.url, {
           text: item.text,
           voice: item.voice,
@@ -405,11 +477,11 @@ Three things about agy are load-bearing and were each found by it going wrong, s
         });
       });
 
-      historyList.appendChild(div);
+      historyChipsRow.appendChild(chip);
     });
   }
 
-  // Helpers
+  // --- Helpers ---
   function formatTime(sec) {
     if (isNaN(sec)) return '0:00';
     const m = Math.floor(sec / 60);
